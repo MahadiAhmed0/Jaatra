@@ -10,6 +10,8 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const placeRoutes = require("./routes/placeRoutes");
 const { nestedRouter: reviewRoutes, flatRouter: reviewItemRoutes } = require("./routes/reviewRoutes");
+const { nestedRouter: reportRoutes, flatRouter: reportItemRoutes } = require("./routes/reportRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 const userRoutes = require("./routes/userRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
@@ -28,6 +30,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/places", placeRoutes);
 app.use("/api/places/:placeId/reviews", reviewRoutes);
 app.use("/api/reviews", reviewItemRoutes);
+app.use("/api/reviews/:id/report", reportRoutes);
+app.use("/api/reports", reportItemRoutes);
+app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 
 app.use((req, res) => {
