@@ -1,5 +1,6 @@
 const Review = require("../models/Review");
 const Place = require("../models/Place");
+const Report = require("../models/Report");
 
 const recalcPlaceRating = async (placeId) => {
   const stats = await Review.aggregate([
@@ -39,6 +40,7 @@ exports.createReview = async (req, res, next) => {
       user: req.user._id,
       rating: req.body.rating,
       comment: req.body.comment,
+      images: req.body.images || [],
     });
 
     await recalcPlaceRating(review.place);
@@ -65,6 +67,7 @@ exports.updateReview = async (req, res, next) => {
 
     if (req.body.rating !== undefined) review.rating = req.body.rating;
     if (req.body.comment !== undefined) review.comment = req.body.comment;
+    if (req.body.images !== undefined) review.images = req.body.images;
 
     await review.save();
     await recalcPlaceRating(review.place);
@@ -93,6 +96,7 @@ exports.deleteReview = async (req, res, next) => {
 
     const placeId = review.place;
     await review.deleteOne();
+    await Report.deleteMany({ review: review._id });
     await recalcPlaceRating(placeId);
 
     res.json({ data: null, message: "Review deleted successfully" });
