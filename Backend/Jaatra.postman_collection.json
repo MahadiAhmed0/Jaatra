@@ -1,0 +1,338 @@
+{
+  "info": {
+    "name": "Jaatra API",
+    "description": "Jaatra backend API - Express + MongoDB. Run `npm run dev` in Backend/ first. Login to get a token (auto-saved), then use admin token for admin routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "placeId", "value": "" },
+    { "key": "reviewId", "value": "" },
+    { "key": "reportId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+            "description": "Public. Duplicate email -> 409."
+          }
+        },
+        {
+          "name": "Login (saves token)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "description": "Public. Returns JWT in data.token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set(\"token\", pm.response.json().data.token); }"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Admin (saves adminToken)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "description": "Public. Use a user whose role is 'admin' (set in MongoDB Compass)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set(\"adminToken\", pm.response.json().data.token); }"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Places",
+      "item": [
+        {
+          "name": "Get All Places",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/places?city=Dhaka&category=hotel&search=&sort=-avgRating&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "places"],
+              "query": [
+                { "key": "city", "value": "Dhaka", "description": "optional" },
+                { "key": "category", "value": "hotel", "description": "hotel | restaurant | attraction" },
+                { "key": "search", "value": "", "description": "name keyword (case-insensitive)" },
+                { "key": "sort", "value": "-avgRating", "description": "avgRating | -avgRating | priceRange | -priceRange" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Public."
+          }
+        },
+        {
+          "name": "Get Place by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/places/{{placeId}}", "host": ["{{baseUrl}}"], "path": ["api", "places", "{{placeId}}"] },
+            "description": "Public. 404 if not found, 400 on bad id format."
+          }
+        },
+        {
+          "name": "Create Place (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lake View Hotel\",\n  \"description\": \"Nice lake view\",\n  \"category\": \"hotel\",\n  \"address\": \"Road 12, Gulshan\",\n  \"city\": \"Dhaka\",\n  \"priceRange\": \"$$\",\n  \"lat\": 23.8103,\n  \"lng\": 90.4125,\n  \"images\": [\"https://res.cloudinary.com/qpsbm3lo/image/upload/v1786968910/ppxnw9c8ywbalm6twliz.jpg\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/places", "host": ["{{baseUrl}}"], "path": ["api", "places"] },
+            "description": "Admin only (403 otherwise). category: hotel | restaurant | attraction. priceRange: $ | $$ | $$$. lat -90..90, lng -180..180."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set(\"placeId\", pm.response.json().data._id); }"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Place (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Lake View Hotel (Renovated)\",\n  \"priceRange\": \"$$$\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/places/{{placeId}}", "host": ["{{baseUrl}}"], "path": ["api", "places", "{{placeId}}"] },
+            "description": "Admin only."
+          }
+        },
+        {
+          "name": "Delete Place (admin)",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/places/{{placeId}}", "host": ["{{baseUrl}}"], "path": ["api", "places", "{{placeId}}"] },
+            "description": "Admin only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Get Reviews of a Place",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/places/{{placeId}}/reviews", "host": ["{{baseUrl}}"], "path": ["api", "places", "{{placeId}}", "reviews"] },
+            "description": "Public. Populated with user name."
+          }
+        },
+        {
+          "name": "Create Review (saves reviewId)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Amazing view and great service!\",\n  \"images\": [\"https://res.cloudinary.com/qpsbm3lo/image/upload/v1786968910/ppxnw9c8ywbalm6twliz.jpg\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/places/{{placeId}}/reviews", "host": ["{{baseUrl}}"], "path": ["api", "places", "{{placeId}}", "reviews"] },
+            "description": "Logged-in user. rating 1-5, comment max 500. One review per user per place (duplicate -> 409)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set(\"reviewId\", pm.response.json().data._id); }"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Review (owner)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Changed my mind\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/reviews/{{reviewId}}", "host": ["{{baseUrl}}"], "path": ["api", "reviews", "{{reviewId}}"] },
+            "description": "Owner only (403 otherwise)."
+          }
+        },
+        {
+          "name": "Delete Review (owner or admin)",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/reviews/{{reviewId}}", "host": ["{{baseUrl}}"], "path": ["api", "reviews", "{{reviewId}}"] },
+            "description": "Owner or admin. Cascade-deletes its reports and recalculates place rating."
+          }
+        },
+        {
+          "name": "Mark Review Helpful",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/reviews/{{reviewId}}/helpful", "host": ["{{baseUrl}}"], "path": ["api", "reviews", "{{reviewId}}", "helpful"] },
+            "description": "Logged-in user. Increments helpfulCount."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Report Review (saves reportId)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Spam or inappropriate content\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/reviews/{{reviewId}}/report", "host": ["{{baseUrl}}"], "path": ["api", "reviews", "{{reviewId}}", "report"] },
+            "description": "Logged-in user. One report per user per review (duplicate -> 409)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set(\"reportId\", pm.response.json().data._id); }"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Reports (admin)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "url": {
+              "raw": "{{baseUrl}}/api/reports?status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports"],
+              "query": [{ "key": "status", "value": "pending", "description": "pending | resolved (optional)" }]
+            },
+            "description": "Admin only. Populated with review and reporter."
+          }
+        },
+        {
+          "name": "Resolve Report (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"resolved\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/reports/{{reportId}}", "host": ["{{baseUrl}}"], "path": ["api", "reports", "{{reportId}}"] },
+            "description": "Admin only. status: pending | resolved."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "image", "type": "file", "src": [], "description": "max 5MB, images only" }]
+            },
+            "url": { "raw": "{{baseUrl}}/api/upload", "host": ["{{baseUrl}}"], "path": ["api", "upload"] },
+            "description": "Logged-in user. Backend uploads to Cloudinary, returns { data: { url } }. Use the url in a place/review images array."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] }
+          }
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] },
+            "description": "Only name/email can be updated (not password or role)."
+          }
+        },
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/users/me/wishlist", "host": ["{{baseUrl}}"], "path": ["api", "users", "me", "wishlist"] },
+            "description": "Returns populated place documents."
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/users/me/wishlist/{{placeId}}", "host": ["{{baseUrl}}"], "path": ["api", "users", "me", "wishlist", "{{placeId}}"] },
+            "description": "No duplicates (same id twice is a no-op). 404 if place missing."
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/api/users/me/wishlist/{{placeId}}", "host": ["{{baseUrl}}"], "path": ["api", "users", "me", "wishlist", "{{placeId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
