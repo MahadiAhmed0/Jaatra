@@ -1,4 +1,11 @@
 const errorHandler = (err, req, res, next) => {
+  if (err.name === "MulterError" || err.status === 400) {
+    return res.status(400).json({
+      error: err.message,
+      status: 400,
+    });
+  }
+
   if (err.name === "ValidationError") {
     const messages = Object.values(err.errors).map((e) => e.message);
     return res.status(400).json({
