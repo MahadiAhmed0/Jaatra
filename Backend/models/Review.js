@@ -23,6 +23,7 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       maxlength: 500,
     },
+    images: [{ type: String }],
     helpfulCount: {
       type: Number,
       default: 0,
