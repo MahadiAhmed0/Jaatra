@@ -1,0 +1,33 @@
+
+1
+
+70%
+Web & Mobile Application Development 
+Project Proposal Submission 
+ 
+Project Description 
+‘Jaatra’ is a cross-platform travel companion application inspired by TripAdvisor, designed to help users 
+discover, review, and plan visits to hotels, restaurants, and tourist attractions. Built with React (web) 
+and React Native (mobile), the app delivers a seamless experience across both platforms -allowing 
+travelers to explore destinations, read community-driven reviews, and build personalized wishlists, all 
+from a single shared backend. 
+Main Features 
+•  Place Discovery & Search: Browse hotels, restaurants, and tourist attractions by location, 
+category, or keyword with smart filtering by rating, price range, and type. 
+•  Reviews & Ratings: Authenticated users can post, edit, and delete reviews with star ratings and 
+photo uploads. Others can mark reviews as helpful or flag them. 
+•  User Profiles & Wishlists: Personalized profiles with travel history, saved places (wishlists), and a 
+summary of review activity. 
+•  Interactive Maps: Map view to explore nearby places, visualize clusters of attractions, and get 
+directions for any listed destination. 
+•  Cross-Platform (Web + Mobile): Shared API layer with React on web and React Native on mobile, 
+ensuring consistent features and UX across all devices. 
+•  Admin Dashboard: Web-based admin panel to manage listings, moderate reviews, and handle 
+reported content. 
+ 
+Tech Stack (we may change them later based on our progress and course 
+contents) 
+Frontend (Web) React.js 
+Backend Node.js + Express 
+
+ 
