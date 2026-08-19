@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
 import Modal from '../components/Modal'
+import LocationPicker from '../components/LocationPicker'
 import {
   BuildingIcon,
   UtensilsIcon,
@@ -130,27 +131,20 @@ function PlaceForm({ place, onClose, onSaved }) {
           <label>City</label>
           <input className="input" required value={form.city} onChange={(e) => set('city', e.target.value)} />
         </div>
-        <div className="field">
-          <label>Latitude</label>
-          <input
-            className="input"
-            type="number"
-            step="any"
-            value={form.lat}
-            onChange={(e) => set('lat', e.target.value)}
-            placeholder="23.8103"
+        <div className="field" style={{ gridColumn: '1 / -1' }}>
+          <label>Location</label>
+          <LocationPicker
+            lat={form.lat}
+            lng={form.lng}
+            onChange={(la, ln) => {
+              set('lat', la)
+              set('lng', ln)
+            }}
           />
-        </div>
-        <div className="field">
-          <label>Longitude</label>
-          <input
-            className="input"
-            type="number"
-            step="any"
-            value={form.lng}
-            onChange={(e) => set('lng', e.target.value)}
-            placeholder="90.4125"
-          />
+          <div className="pick-coords">
+            <span>Latitude: <strong>{form.lat === '' ? '—' : Number(form.lat).toFixed(5)}</strong></span>
+            <span>Longitude: <strong>{form.lng === '' ? '—' : Number(form.lng).toFixed(5)}</strong></span>
+          </div>
         </div>
         <div className="field" style={{ gridColumn: '1 / -1' }}>
           <label>Photos</label>

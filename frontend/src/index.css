@@ -1751,6 +1751,50 @@ select.input.compact:focus {
   gap: 14px;
 }
 
+.pick-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pick-map {
+  height: 320px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #cdd7e6;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.pick-pin {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.pick-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.pick-error {
+  margin: 6px 0 8px;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.pick-coords {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pick-coords strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .img-list {
   display: flex;
   gap: 10px;
