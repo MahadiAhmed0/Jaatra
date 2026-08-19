@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { CompassIcon, MenuIcon, HeartIcon, ShieldIcon, LogOutIcon, XIcon } from '../icons'
+import { CompassIcon, MenuIcon, HeartIcon, SlidersIcon, LogOutIcon, XIcon } from '../icons'
 
 export default function Navbar() {
   const { user, token, isAdmin, logout } = useAuth()
@@ -38,7 +38,7 @@ export default function Navbar() {
           )}
           {isAdmin && (
             <NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} onClick={close}>
-              <ShieldIcon size={16} /> Admin
+              <SlidersIcon size={16} /> Actions
             </NavLink>
           )}
           {token ? (
