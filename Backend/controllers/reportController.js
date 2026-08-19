@@ -8,6 +8,15 @@ exports.createReport = async (req, res, next) => {
       return res.status(404).json({ error: "Review not found", status: 404 });
     }
 
+    const existing = await Report.findOne({ review: review._id, user: req.user._id });
+    if (existing) {
+const message =
+        existing.status === "resolved"
+          ? "This report has already been reviewed"
+          : "Review already reported";
+      return res.json({ data: existing, message, alreadyReported: true });
+    }
+
     const report = await Report.create({
       review: review._id,
       user: req.user._id,

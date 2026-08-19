@@ -177,7 +177,8 @@ export default function PlaceDetail() {
     if (!reportReason.trim()) return
     setBusy(true)
     try {
-      await api.reportReview(reportFor, { reason: reportReason })
+      const res = await api.reportReview(reportFor, { reason: reportReason })
+      if (res.alreadyReported) window.alert(res.message)
       setReportFor(null)
       setReportReason('')
     } catch (err) {
