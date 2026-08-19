@@ -160,7 +160,13 @@ export default function PlaceDetail() {
   const markHelpful = async (review) => {
     try {
       const res = await api.markHelpful(review._id)
-      setReviews((rs) => rs.map((r) => (r._id === review._id ? res.data : r)))
+      setReviews((rs) =>
+        rs.map((r) =>
+          r._id === review._id
+            ? { ...r, helpfulCount: res.data.helpfulCount, helpfulBy: res.data.helpfulBy }
+            : r
+        )
+      )
     } catch (err) {
       window.alert(err.message)
     }
@@ -357,7 +363,10 @@ export default function PlaceDetail() {
                 )}
                 <div className="review-actions">
                   {token && (
-                    <button className="action-btn" onClick={() => markHelpful(review)}>
+                    <button
+                      className={`action-btn${review.helpfulBy?.some((id) => String(id) === String(user?._id)) ? ' liked' : ''}`}
+                      onClick={() => markHelpful(review)}
+                    >
                       <ThumbsUpIcon size={13} /> Helpful · {review.helpfulCount}
                     </button>
                   )}

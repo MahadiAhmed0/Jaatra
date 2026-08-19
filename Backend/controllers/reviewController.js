@@ -107,15 +107,32 @@ exports.deleteReview = async (req, res, next) => {
 
 exports.markHelpful = async (req, res, next) => {
   try {
-    const review = await Review.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { helpfulCount: 1 } },
-      { new: true }
-    );
+    const review = await Review.findById(req.params.id);
     if (!review) {
       return res.status(404).json({ error: "Review not found", status: 404 });
     }
-    res.json({ data: review, message: "Review marked helpful" });
+
+    const userId = req.user._id;
+    const alreadyHelpful = review.helpfulBy.some((id) => id.equals(userId));
+
+    const updated = alreadyHelpful
+      ? await Review.findByIdAndUpdate(
+          req.params.id,
+          { $pull: { helpfulBy: userId }, $inc: { helpfulCount: -1 } },
+          { new: true }
+        )
+      : await Review.findByIdAndUpdate(
+          req.params.id,
+          { $push: { helpfulBy: userId }, $inc: { helpfulCount: 1 } },
+          { new: true }
+        );
+
+    await updated.populate("user", "name");
+
+    res.json({
+      data: updated,
+      message: alreadyHelpful ? "Review no longer marked helpful" : "Review marked helpful",
+    });
   } catch (err) {
     next(err);
   }
