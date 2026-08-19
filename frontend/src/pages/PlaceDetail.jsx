@@ -33,7 +33,7 @@ const formatDate = (iso) =>
 
 export default function PlaceDetail() {
   const { id } = useParams()
-  const { token, user } = useAuth()
+  const { token, user, isAdmin } = useAuth()
 
   const [place, setPlace] = useState(null)
   const [reviews, setReviews] = useState([])
@@ -383,14 +383,14 @@ export default function PlaceDetail() {
                     </button>
                   )}
                   {ownReview(review) && (
-                    <>
-                      <button className="action-btn" onClick={() => startEdit(review)}>
-                        <EditIcon size={13} /> Edit
-                      </button>
-                      <button className="action-btn danger-text" onClick={() => removeReview(review._id)}>
-                        <TrashIcon size={13} /> Delete
-                      </button>
-                    </>
+                    <button className="action-btn" onClick={() => startEdit(review)}>
+                      <EditIcon size={13} /> Edit
+                    </button>
+                  )}
+                  {(ownReview(review) || isAdmin) && (
+                    <button className="action-btn danger-text" onClick={() => removeReview(review._id)}>
+                      <TrashIcon size={13} /> Delete
+                    </button>
                   )}
                 </div>
               </article>

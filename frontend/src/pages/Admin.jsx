@@ -239,6 +239,16 @@ export default function Admin() {
     }
   }
 
+  const deleteReportedReview = async (report) => {
+    if (!window.confirm('Delete this review?')) return
+    try {
+      await api.deleteReview(report.review._id)
+      loadReports()
+    } catch (err) {
+      window.alert(err.message)
+    }
+  }
+
   if (user?.role !== 'admin') {
     return (
       <div className="empty">
@@ -356,6 +366,11 @@ export default function Admin() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
                     <span className={`report-status ${report.status}`}>{report.status}</span>
+                    {report.review && (
+                      <button className="btn small danger" onClick={() => deleteReportedReview(report)}>
+                        <TrashIcon size={14} /> Delete review
+                      </button>
+                    )}
                     {report.status === 'pending' && (
                       <button className="btn small" onClick={() => resolveReport(report)}>
                         <CheckIcon size={14} /> Resolve
