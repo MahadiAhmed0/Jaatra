@@ -32,7 +32,7 @@ export default function Navbar() {
 
         <nav className={`nav-links${open ? ' open' : ''}`}>
           {token && (
-            <NavLink to="/profile" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} onClick={close}>
+            <NavLink to="/wishlist" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} onClick={close}>
               <HeartIcon size={16} /> Wishlist
             </NavLink>
           )}
@@ -43,7 +43,9 @@ export default function Navbar() {
           )}
           {token ? (
             <>
-              <span className="nav-user">{user?.name}</span>
+              <NavLink to="/profile" className="nav-user" onClick={close}>
+                {user?.name}
+              </NavLink>
               <button className="btn ghost small" onClick={handleLogout}>
                 <LogOutIcon size={15} /> Log out
               </button>

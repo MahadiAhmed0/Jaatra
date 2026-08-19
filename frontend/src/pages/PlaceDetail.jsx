@@ -45,6 +45,7 @@ export default function PlaceDetail() {
   const [form, setForm] = useState({ rating: 5, comment: '', image: '' })
   const [formError, setFormError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [reportFor, setReportFor] = useState(null)
   const [reportReason, setReportReason] = useState('')
@@ -120,9 +121,15 @@ export default function PlaceDetail() {
     setFormError('')
     try {
       if (editingId) {
-        await api.updateReview(editingId, { rating: form.rating, comment: form.comment })
+        const body = { rating: form.rating, comment: form.comment }
+        if (form.image) body.images = [form.image]
+        await api.updateReview(editingId, body)
       } else {
-        await api.createReview(id, { rating: form.rating, comment: form.comment })
+        await api.createReview(id, {
+          rating: form.rating,
+          comment: form.comment,
+          images: form.image ? [form.image] : [],
+        })
       }
       setForm({ rating: 5, comment: '', image: '' })
       setEditingId(null)
@@ -190,11 +197,14 @@ export default function PlaceDetail() {
 
   const uploadReviewImage = async (file) => {
     setFormError('')
+    setUploading(true)
     try {
       const url = await api.uploadImage(file)
       setForm((f) => ({ ...f, image: url }))
     } catch (err) {
       setFormError(err.message)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -297,10 +307,11 @@ export default function PlaceDetail() {
                 </div>
                 <label className="upload-box">
                   <UploadIcon size={16} />
-                  {form.image ? 'Image attached' : 'Attach a photo'}
+                  {uploading ? 'Uploading…' : form.image ? 'Image attached' : 'Attach a photo'}
                   <input
                     type="file"
                     accept="image/*"
+                    disabled={uploading}
                     onChange={(e) => e.target.files[0] && uploadReviewImage(e.target.files[0])}
                   />
                 </label>

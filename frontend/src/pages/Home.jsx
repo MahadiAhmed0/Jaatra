@@ -12,7 +12,7 @@ import {
   UtensilsIcon,
   LandmarkIcon,
   ArrowRightIcon,
-  SparklesIcon,
+  CompassIcon,
   StarIcon,
 } from '../icons'
 
@@ -122,14 +122,14 @@ export default function Home() {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  const heroPlace = [...places].sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0))[0]
+  const heroImg = heroPlace?.images?.[0] || ''
+
   return (
     <div>
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-copy">
-            <span className="hero-eyebrow">
-              <SparklesIcon size={13} /> Travel companion
-            </span>
             <h1>
               Where to <span className="hero-accent">next?</span>
             </h1>
@@ -200,21 +200,23 @@ export default function Home() {
                 <path d="M196 466 q34 18 68 0 l-7 12 h-54 z" fill="#fff" />
                 <path d="M232 468 l8 8 h-16 z" fill="#fff" />
               </svg>
-              <img
-                className="hero-photo-img"
-                src="https://picsum.photos/seed/jaatra-hero/720/840"
-                alt="Travel destination"
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
-              />
+              {heroImg && (
+                <img
+                  className="hero-photo-img"
+                  src={heroImg}
+                  alt={heroPlace?.name || 'Travel destination'}
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
+              )}
             </div>
             <div className="float-card top">
               <span className="fc-icon">
-                <SparklesIcon size={17} />
+                <CompassIcon size={17} />
               </span>
               <span>
                 <span className="fc-title">Top pick</span>
                 <br />
-                <span className="fc-sub">Recommended stays</span>
+                <span className="fc-sub">{heroPlace ? heroPlace.name : 'Recommended stays'}</span>
               </span>
             </div>
             <div className="float-card bottom">
@@ -222,9 +224,15 @@ export default function Home() {
                 <StarIcon size={17} />
               </span>
               <span>
-                <span className="fc-title">4.8 rating</span>
+                <span className="fc-title">
+                  {heroPlace && heroPlace.avgRating
+                    ? `${Number(heroPlace.avgRating).toFixed(1)} rating`
+                    : 'Top rated'}
+                </span>
                 <br />
-                <span className="fc-sub">12,000+ reviews</span>
+                <span className="fc-sub">
+                  {heroPlace ? `${heroPlace.reviewCount || 0} reviews` : 'From real travelers'}
+                </span>
               </span>
             </div>
           </div>

@@ -336,6 +336,7 @@ textarea.input {
   background: var(--primary-soft);
   border-radius: var(--radius-sm);
   margin-left: 4px;
+  text-decoration: none;
 }
 
 .menu-btn {
@@ -520,7 +521,6 @@ textarea.input {
 .float-card.top {
   top: 6%;
   right: 2%;
-  animation: floaty 5s ease-in-out infinite;
 }
 
 .float-card.bottom {
@@ -547,16 +547,6 @@ textarea.input {
 .float-card .fc-sub {
   font-size: 11.5px;
   color: var(--muted);
-}
-
-@keyframes floaty {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-7px);
-  }
 }
 
 /* ---------- Browse categories ---------- */
