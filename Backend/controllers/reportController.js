@@ -35,7 +35,7 @@ exports.getReports = async (req, res, next) => {
     if (req.query.status) filter.status = req.query.status;
 
     const reports = await Report.find(filter)
-      .populate("review", "rating comment place")
+      .populate("review", "rating comment place deleted")
       .populate("user", "name")
       .sort({ createdAt: -1 });
 

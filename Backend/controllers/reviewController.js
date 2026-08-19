@@ -1,10 +1,9 @@
 const Review = require("../models/Review");
 const Place = require("../models/Place");
-const Report = require("../models/Report");
 
 const recalcPlaceRating = async (placeId) => {
   const stats = await Review.aggregate([
-    { $match: { place: placeId } },
+    { $match: { place: placeId, deleted: { $ne: true } } },
     {
       $group: {
         _id: "$place",
@@ -26,7 +25,7 @@ const recalcPlaceRating = async (placeId) => {
 
 exports.getReviews = async (req, res, next) => {
   try {
-    const reviews = await Review.find({ place: req.params.placeId }).populate("user", "name");
+    const reviews = await Review.find({ place: req.params.placeId, deleted: { $ne: true } }).populate("user", "name");
     res.json({ data: reviews, message: "Reviews retrieved successfully" });
   } catch (err) {
     next(err);
@@ -35,6 +34,20 @@ exports.getReviews = async (req, res, next) => {
 
 exports.createReview = async (req, res, next) => {
   try {
+    const existing = await Review.findOne({ place: req.params.placeId, user: req.user._id });
+    if (existing) {
+      if (!existing.deleted) {
+        return res.status(409).json({ error: "review already exists", status: 409 });
+      }
+      existing.rating = req.body.rating;
+      existing.comment = req.body.comment;
+      existing.images = req.body.images || [];
+      existing.deleted = false;
+      await existing.save();
+      await recalcPlaceRating(existing.place);
+      return res.status(201).json({ data: existing, message: "Review created successfully" });
+    }
+
     const review = await Review.create({
       place: req.params.placeId,
       user: req.user._id,
@@ -55,6 +68,10 @@ exports.updateReview = async (req, res, next) => {
   try {
     const review = await Review.findById(req.params.id);
     if (!review) {
+      return res.status(404).json({ error: "Review not found", status: 404 });
+    }
+
+    if (review.deleted) {
       return res.status(404).json({ error: "Review not found", status: 404 });
     }
 
@@ -94,12 +111,11 @@ exports.deleteReview = async (req, res, next) => {
       });
     }
 
-    const placeId = review.place;
-    await review.deleteOne();
-    await Report.deleteMany({ review: review._id });
-    await recalcPlaceRating(placeId);
+    review.deleted = true;
+    await review.save();
+    await recalcPlaceRating(review.place);
 
-    res.json({ data: null, message: "Review deleted successfully" });
+    res.json({ data: review, message: "Review deleted successfully" });
   } catch (err) {
     next(err);
   }
@@ -108,7 +124,7 @@ exports.deleteReview = async (req, res, next) => {
 exports.markHelpful = async (req, res, next) => {
   try {
     const review = await Review.findById(req.params.id);
-    if (!review) {
+    if (!review || review.deleted) {
       return res.status(404).json({ error: "Review not found", status: 404 });
     }
 
@@ -133,6 +149,27 @@ exports.markHelpful = async (req, res, next) => {
       data: updated,
       message: alreadyHelpful ? "Review no longer marked helpful" : "Review marked helpful",
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.restoreReview = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ error: "Review not found", status: 404 });
+    }
+
+    if (!review.deleted) {
+      return res.status(400).json({ error: "Review is not deleted", status: 400 });
+    }
+
+    review.deleted = false;
+    await review.save();
+    await recalcPlaceRating(review.place);
+
+    res.json({ data: review, message: "Review restored successfully" });
   } catch (err) {
     next(err);
   }

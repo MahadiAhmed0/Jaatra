@@ -250,6 +250,16 @@ export default function Admin() {
     }
   }
 
+  const restoreReportedReview = async (report) => {
+    if (!window.confirm('Restore this review?')) return
+    try {
+      await api.restoreReview(report.review._id)
+      loadReports()
+    } catch (err) {
+      window.alert(err.message)
+    }
+  }
+
   if (user?.role !== 'admin') {
     return (
       <div className="empty">
@@ -360,7 +370,8 @@ export default function Admin() {
                       Reported by {report.user?.name} · {new Date(report.createdAt).toLocaleDateString()}
                     </div>
                     {report.review && (
-                      <div className="report-quote">
+                      <div className={`report-quote${report.review.deleted ? ' deleted' : ''}`}>
+                        {report.review.deleted && <span className="report-status deleted">deleted</span>}
                         “{report.review.comment}” — {report.review.rating}/5
                       </div>
                     )}
@@ -372,9 +383,14 @@ export default function Admin() {
                         View review
                       </Link>
                     )}
-                    {report.review && (
+                    {report.review && !report.review.deleted && (
                       <button className="btn small danger" onClick={() => deleteReportedReview(report)}>
                         <TrashIcon size={14} /> Delete review
+                      </button>
+                    )}
+                    {report.review?.deleted && (
+                      <button className="btn small" onClick={() => restoreReportedReview(report)}>
+                        Restore review
                       </button>
                     )}
                     {report.status === 'pending' && (

@@ -55,6 +55,7 @@ export const api = {
   createReview: (placeId, body) => request(`/places/${placeId}/reviews`, { method: 'POST', body }),
   updateReview: (id, body) => request(`/reviews/${id}`, { method: 'PATCH', body }),
   deleteReview: (id) => request(`/reviews/${id}`, { method: 'DELETE' }),
+  restoreReview: (id) => request(`/reviews/${id}/restore`, { method: 'PATCH' }),
   markHelpful: (id) => request(`/reviews/${id}/helpful`, { method: 'PATCH' }),
   reportReview: (id, body) => request(`/reviews/${id}/report`, { method: 'POST', body }),
 
