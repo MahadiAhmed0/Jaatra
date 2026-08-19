@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
 import Modal from '../components/Modal'
@@ -366,6 +367,11 @@ export default function Admin() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
                     <span className={`report-status ${report.status}`}>{report.status}</span>
+                    {report.review && (
+                      <Link className="btn small" to={`/place/${report.review.place}`}>
+                        View review
+                      </Link>
+                    )}
                     {report.review && (
                       <button className="btn small danger" onClick={() => deleteReportedReview(report)}>
                         <TrashIcon size={14} /> Delete review
